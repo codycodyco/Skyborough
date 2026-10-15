@@ -27,6 +27,7 @@ public class uSkyBlockTest {
     @Test
     public void restartPlayerIslandDoesNotClearIslandWhenSchemeValidationFails() throws Exception {
         uSkyBlock plugin = mock(uSkyBlock.class, Answers.CALLS_REAL_METHODS);
+        doReturn(new org.bukkit.configuration.file.YamlConfiguration()).when(plugin).getConfig();
         Player player = mock(Player.class);
         IslandLogic islandLogic = mock(IslandLogic.class);
         setField(plugin, "islandLogic", islandLogic);
@@ -36,6 +37,24 @@ public class uSkyBlockTest {
 
         assertFalse(restarted);
         verifyNoInteractions(islandLogic);
+    }
+
+    @Test
+    public void boroughModeNeverClearsInventoryOrRestartsHome() throws Exception {
+        uSkyBlock plugin = mock(uSkyBlock.class, Answers.CALLS_REAL_METHODS);
+        var config = new org.bukkit.configuration.file.YamlConfiguration();
+        config.set("skyborough.enabled", true);
+        doReturn(config).when(plugin).getConfig();
+        Player player = mock(Player.class);
+        var info = mock(us.talabrek.ultimateskyblock.player.PlayerInfo.class);
+        doReturn(info).when(plugin).getPlayerInfo(player);
+        IslandLogic logic = mock(IslandLogic.class);
+        setField(plugin, "islandLogic", logic);
+        plugin.clearPlayerInventory(player);
+        verifyNoInteractions(player);
+        org.mockito.Mockito.verify(info).setClearInventoryOnNextEntry(false);
+        assertFalse(plugin.restartPlayerIsland(player, new Location(null, 0, 150, 0), "default"));
+        verifyNoInteractions(logic);
     }
 
     private static void setField(Object target, String fieldName, Object value) throws Exception {

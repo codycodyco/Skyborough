@@ -93,6 +93,38 @@ public class IslandLocatorLogicTest {
         assertThat("duplicate locations detected", set.size(), is(locations.size()));
     }
 
+    @Test
+    public void boroughAllocatesAroundSelectedCityAndReservesDistinctHomes() throws Exception {
+        uSkyBlock plugin = createPluginMock();
+        var config = plugin.getConfig();
+        config.set("skyborough.enabled", true);
+        config.set("skyborough.city.registered", true);
+        config.set("skyborough.city.ready", true);
+        config.set("skyborough.city.min-x", 900);
+        config.set("skyborough.city.max-x", 1100);
+        config.set("skyborough.city.min-z", -300);
+        config.set("skyborough.city.max-z", -100);
+        World world = mock(World.class);
+        var border = mock(org.bukkit.WorldBorder.class);
+        when(world.getWorldBorder()).thenReturn(border);
+        when(border.isInside(any(Location.class))).thenReturn(true);
+        WorldManager manager = mock(WorldManager.class);
+        when(manager.getWorld()).thenReturn(world);
+        var runtime = createRuntimeConfigs(128);
+        var locator = new IslandLocatorLogic(plugin, tempDir, mock(), manager, mock(), mock(), runtime);
+        var bounds = new us.talabrek.ultimateskyblock.borough.BoroughBounds(900, -300, 1100, -100);
+        Set<String> allocated = new HashSet<>();
+        for (int i = 0; i < 12; i++) {
+            Location home = locator.getNextIslandLocation(createPlayerMock());
+            org.junit.jupiter.api.Assertions.assertFalse(bounds.intersects(home.getBlockX(), home.getBlockZ(), 64, 32));
+            org.junit.jupiter.api.Assertions.assertTrue(allocated.add(home.getBlockX() + "," + home.getBlockZ()));
+            org.junit.jupiter.api.Assertions.assertTrue(Math.abs(home.getBlockX() - 1024) <= 384);
+        }
+        when(border.isInside(any(Location.class))).thenReturn(false);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
+            () -> locator.getNextIslandLocation(createPlayerMock()));
+    }
+
     private Player createPlayerMock() {
         Player player = mock(Player.class);
         when(player.getLocation()).then((Answer<Location>) invocationOnMock -> new Location(null, 100, 100, 100));

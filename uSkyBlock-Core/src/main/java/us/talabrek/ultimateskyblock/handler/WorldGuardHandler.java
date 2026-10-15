@@ -1,5 +1,7 @@
 package us.talabrek.ultimateskyblock.handler;
 
+import us.talabrek.ultimateskyblock.borough.BoroughSettings;
+
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
@@ -331,6 +333,11 @@ public class WorldGuardHandler {
     public static boolean isIslandIntersectingSpawn(Location islandLocation) {
         log.entering(CN, "isIslandIntersectingSpawn", islandLocation);
         try {
+            if (BoroughSettings.enabled(uSkyBlock.getInstance())) {
+                var bounds = BoroughSettings.bounds(uSkyBlock.getInstance());
+                return bounds == null || bounds.intersects(islandLocation.getBlockX(), islandLocation.getBlockZ(),
+                    runtimeConfig().island().radius(), Math.max(0, uSkyBlock.getInstance().getConfig().getInt("skyborough.city-gap", 32)));
+            }
             int r = runtimeConfig().general().spawnSize();
             if (r == 0) {
                 return false;

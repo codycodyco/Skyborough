@@ -32,6 +32,10 @@ libraries:
   - org.xerial:sqlite-jdbc:${sqliteVersion}
 
 commands:
+  borough:
+    description: Skyborough 主城与家园
+    aliases: [sb]
+    permission: skyborough.use
   challenges:
     description: 'complete and list challenges'
     aliases: [c]
@@ -52,6 +56,10 @@ commands:
     description: 'Ultimate SkyBlock Admin'
 
 permissions:
+  skyborough.use:
+    default: true
+  skyborough.admin:
+    default: op
   #
   # Permission Groups
   # =================
