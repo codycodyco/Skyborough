@@ -1,85 +1,96 @@
-# uSkyBlock
+# Skyborough
 
-[![Build](https://img.shields.io/github/actions/workflow/status/uskyblock/uSkyBlock/build.yml?branch=master&label=build)](https://github.com/uskyblock/uSkyBlock/actions/workflows/build.yml)
-[![Version](https://img.shields.io/github/v/tag/uskyblock/uSkyBlock?label=version&sort=semver&color=007EC6)](https://github.com/uskyblock/uSkyBlock/tags)
-[![Spigot](https://img.shields.io/badge/plugin-spigot-ED8106)](https://www.spigotmc.org/resources/uskyblock-revived.66795/)
-[![Hangar](https://img.shields.io/badge/plugin-hangar-007EC6)](https://hangar.papermc.io/uSkyBlock/uSkyBlock)
-[![Docs](https://img.shields.io/badge/docs-site-1F7A52)](https://uskyblock.github.io/docs/)
-[![License](https://img.shields.io/badge/license-GPLv3-007EC6)](http://www.gnu.org/copyleft/gpl.html)
+**A community-oriented SkyBlock home system for Minecraft servers, built on [uSkyBlock](https://github.com/uskyblock/uSkyBlock).**
 
-uSkyBlock is a Skyblock plugin for Spigot and Paper servers. Build a server around islands, progression, challenges, party play, and deep gameplay customization, backed by more than a decade of project history and continued maintenance for modern Minecraft versions.
+Skyborough adds a floating central city and automatically allocates player home islands around it. Rather than focusing on traditional SkyBlock progression, it provides a shared community hub and personal building spaces.
 
-uSkyBlock is an open-source Skyblock plugin for Spigot and Paper, with public docs, a public API, and a long community-maintained lineage.
+## Features
 
-**We need your help on translations!** Join the project on [Crowdin](https://crowdin.com/project/uskyblock-revived) to improve translations in your language.
+- **Central city** — Register an existing city or generate a floating island as the community hub.
+- **Automatic home allocation** — Assign islands on a grid around the city, filling nearby available spaces first.
+- **Region protection** — Protect the city with WorldGuard while retaining uSkyBlock's island protection.
+- **Home management** — Claim an island, teleport home, and return to the central city.
+- **Custom schematics** — Reuse uSkyBlock's schematic system for home templates.
+- **Home-friendly gameplay** — Preserve inventories, equipment, ender chests, permissions, and economy data; disable island resets in Skyborough mode.
+- **Optional mode** — Keep existing uSkyBlock behavior when Skyborough is disabled.
 
-## Quick Links
+## Requirements
 
-- Homepage: https://uskyblock.github.io/
-- Docs: https://uskyblock.github.io/docs/
-- Releases: https://www.spigotmc.org/resources/uskyblock-revived.66795/history
-- DevBukkit page: https://dev.bukkit.org/projects/uskyblock
-- Hangar page: https://hangar.papermc.io/uSkyBlock/uSkyBlock
-- Spigot page: https://www.spigotmc.org/resources/uskyblock-revived.66795/
-- Issues: https://github.com/uskyblock/uSkyBlock/issues
-- Contributing: https://uskyblock.github.io/docs/contributing/
-
-## Why uSkyBlock
-
-- Build a Skyblock server around islands, progression, challenges, and party play.
-- Customize the experience with gameplay-focused configuration such as `challenges.yml`, biome options, schematics, and server tuning.
-- Support a global player base with 53 included locale files and a maintained translation workflow.
-- Run a project with more than a decade of lineage and continued maintenance while still targeting modern Minecraft server versions and APIs.
-- Extend or integrate with the plugin through a public API and documented developer workflow.
-
-## Installation
-
-uSkyBlock requires the following plugins:
-
-- Spigot/Paper
+- Paper
 - WorldEdit
 - WorldGuard
 
-Optional integrations:
+**Development target:** Paper 26.2 / Java 25.
 
-- Vault
+Skyborough is currently a **development preview**. Full in-game compatibility testing is still in progress.
 
-For installation, upgrade guidance, and server setup, start here:
+## Getting Started
 
-- https://uskyblock.github.io/docs/admin/setup/
+1. Build the plugin JAR and install it with WorldEdit and WorldGuard.
+2. Set up a dedicated void world for player homes.
+3. Merge the following settings into `plugins/uSkyBlock/config.yml`:
 
-## Start Here
+```yaml
+options:
+  general:
+    worldName: skyworld
+  island:
+    height: 150
+    distance: 128
+    protectionRange: 96
 
-- Players: https://uskyblock.github.io/docs/players/
-- Server admins: https://uskyblock.github.io/docs/admin/setup/
-- Server customization: https://uskyblock.github.io/docs/admin/customization/
-- Challenges config: https://uskyblock.github.io/docs/admin/challenges/
-- Useful commands and permissions: https://uskyblock.github.io/docs/admin/reference/
-- Developers: https://uskyblock.github.io/docs/developers/
-- Contributors: https://uskyblock.github.io/docs/contributing/
+skyborough:
+  enabled: true
+  city-gap: 32
+```
+
+4. Restart the server.
+5. Register an existing city or generate a new floating island.
+
+Do not replace the entire configuration file with this snippet.
+
+### Commands
+
+| Command | Description |
+| --- | --- |
+| `/borough claim` | Claim a home island |
+| `/borough home` | Teleport home |
+| `/borough spawn` | Return to the central city |
+| `/borough pos1` | Mark the first city boundary position |
+| `/borough pos2` | Mark the second city boundary position |
+| `/borough register` | Register an existing city |
+| `/borough generate [radius]` | Generate a floating city island (16–96; default 48) |
+| `/borough finish` | Finalize an interrupted city generation after inspection |
+
+Alias: `/sb`
+
+Permissions:
+
+- `skyborough.use` — Available to all players by default.
+- `skyborough.admin` — Administrator commands, OP by default.
+
+For configuration details and administration, see [SKYBOROUGH.md](SKYBOROUGH.md).
 
 ## Building
 
-To build the plugin, you need Java 21 and the project uses Gradle.
+Build with Gradle:
 
 ```bash
-./gradlew build
+./gradlew :uSkyBlock-Core:test :uSkyBlock-Plugin:shadowJar
 ```
 
-The resulting JAR can be found in `uSkyBlock-Plugin/build/libs/uSkyBlock.jar`.
+The resulting JAR is in `uSkyBlock-Plugin/build/libs/`.
 
-For API integration, translation workflow, and local docs preview, see:
+Skyborough retains uSkyBlock's internal plugin identity and data structure for compatibility. **Do not install it alongside the original uSkyBlock plugin.**
 
-- https://uskyblock.github.io/docs/developers/
+## Project Status
 
-## Project History
+Skyborough is under active development. Current limitations include fixed island heights and protection sizes, no built-in home selection GUI, and no automatic city relocation.
 
-uSkyBlock traces back to the [skySMP plugin](https://dev.bukkit.org/projects/skysmp), which was licensed under GPLv3, and to [rlf/uSkyBlock](https://github.com/rlf/uSkyBlock), an earlier continuation of Talabrek's Ultimate SkyBlock work.
+## Credits
 
-For a time, public continuation of the project was difficult because the Bukkit listing was registered as `All rights reserved`, which complicated sharing and maintenance even as community interest continued.
-
-At the end of 2014, Talabrek explicitly gave his blessing for this repository to continue the project and consolidate the different community branches into a single, officially maintained uSkyBlock codebase.
+Skyborough is a fork of [uSkyBlock](https://github.com/uskyblock/uSkyBlock). Thanks to the original authors and contributors for their work.
 
 ## License
 
-[GPLv3](http://www.gnu.org/copyleft/gpl.html) - [tl;dr Legal](https://www.tldrlegal.com/l/gpl-3.0)
+Licensed under the [GNU General Public License v3.0](LICENSE.txt), following the original uSkyBlock project.
