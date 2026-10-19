@@ -1,5 +1,7 @@
 package us.talabrek.ultimateskyblock.island;
 
+import us.talabrek.ultimateskyblock.borough.BoroughSettings;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import dk.lockfuglsang.minecraft.file.FileUtil;
@@ -111,6 +113,20 @@ public class IslandLocatorLogic {
     private synchronized Location getNext(Player player) {
         int islandHeight = runtimeConfigs.current().island().height();
         int islandDistance = runtimeConfigs.current().island().distance();
+        if (BoroughSettings.enabled(plugin)) {
+            var bounds = BoroughSettings.bounds(plugin);
+            if (!BoroughSettings.ready(plugin) || bounds == null)
+                throw new IllegalStateException("Skyborough city is not ready");
+            int centerX = bounds.centerX(islandDistance), centerZ = bounds.centerZ(islandDistance);
+            Location relative = new Location(worldManager.getWorld(), 0, islandHeight, 0);
+            // Always fill the closest available grid cells first; never use the player's location.
+            for (int i = 0; i < 10000; i++) {
+                Location candidate = relative.clone().add(centerX, 0, centerZ);
+                if (isAvailableLocation(candidate)) return candidate;
+                relative = nextIslandLocation(relative, islandDistance, islandHeight);
+            }
+            throw new IllegalStateException("No free home plots within 10000 cells of the city");
+        }
         Location last = getLastIsland();
         if (worldManager.isSkyWorld(player.getWorld()) && !plugin.islandInSpawn(player.getLocation())) {
             Location location = LocationUtil.alignToDistance(player.getLocation(), islandDistance, islandHeight);
@@ -153,6 +169,16 @@ public class IslandLocatorLogic {
     }
 
     public boolean isAvailableLocation(Location next) {
+        if (BoroughSettings.enabled(plugin)) {
+            var bounds = BoroughSettings.bounds(plugin);
+            int radius = runtimeConfigs.current().island().radius();
+            int gap = Math.max(0, plugin.getConfig().getInt("skyborough.city-gap", 32));
+            if (bounds == null || bounds.intersects(next.getBlockX(), next.getBlockZ(), radius, gap)) return false;
+            var border = next.getWorld().getWorldBorder();
+            if (!border.isInside(next.clone().add(-radius, 0, -radius))
+                || !border.isInside(next.clone().add(radius - 1, 0, radius - 1))) return false;
+            return !(plugin.islandAtLocation(next) || isReserved(next));
+        }
         return !(plugin.islandInSpawn(next) || plugin.islandAtLocation(next) || isReserved(next));
     }
 

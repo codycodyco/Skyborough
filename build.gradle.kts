@@ -3,6 +3,7 @@ import org.gradle.api.GradleException
 
 
 plugins {
+    id("jvm-toolchains")
     alias(libs.plugins.run.paper)
     alias(libs.plugins.shadow).apply(false)
 }
@@ -14,7 +15,10 @@ tasks.register("translation") {
 }
 
 tasks.runServer {
-    minecraftVersion("1.21.11")
+    minecraftVersion("26.2")
+    javaLauncher.set(project.extensions.getByType<org.gradle.jvm.toolchain.JavaToolchainService>().launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(25))
+    })
     val shaded = project(":uSkyBlock-Plugin").tasks.named<ShadowJar>("shadowJar")
     dependsOn(shaded)
     pluginJars.from(shaded.flatMap { it.archiveFile })

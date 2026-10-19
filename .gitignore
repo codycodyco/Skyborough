@@ -43,3 +43,9 @@ docs/src/admin/config-reference.md
 .claude/
 CLAUDE.md
 AGENTS.md
+
+# Local test-server setup (machine-specific paths, endpoints, credentials)
+/test-frpc.toml
+/test-config-backups/
+/TEST-SERVER.md
+/scripts/*-test.sh

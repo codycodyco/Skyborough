@@ -508,3 +508,14 @@ plugin-updates:
 
 # DO NOT TOUCH THE FIELDS BELOW
 version: 124
+
+# Skyborough home mode. Enable only in a dedicated void home world.
+# Keep the upstream default disabled for existing installations.
+skyborough:
+  enabled: false
+  # Clear space between the city bounding box and each home's protected region.
+  city-gap: 32
+  # Set by /borough register or /borough generate; do not edit after claiming homes.
+  city:
+    registered: false
+    ready: false

@@ -1,5 +1,7 @@
 package us.talabrek.ultimateskyblock;
 
+import us.talabrek.ultimateskyblock.borough.BoroughSettings;
+
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -212,6 +214,7 @@ public class uSkyBlock extends JavaPlugin implements uSkyBlockAPI, CommandManage
 
         reloadLegacyStuff();
         startup();
+        getCommand("borough").setExecutor(new us.talabrek.ultimateskyblock.borough.BoroughCommand(this));
 
         api = new UltimateSkyblockApi(this);
         registerApi(api);
@@ -347,6 +350,11 @@ public class uSkyBlock extends JavaPlugin implements uSkyBlockAPI, CommandManage
     }
 
     public boolean restartPlayerIsland(final Player player, final Location next, final String cSchem) {
+        if (BoroughSettings.enabled(this)) {
+            player.sendMessage("家园模式不支持重置空岛；需要调整家园请联系管理员。");
+            return false;
+        }
+
         if (!validateIslandScheme(player, cSchem)) {
             return false;
         }
@@ -363,6 +371,11 @@ public class uSkyBlock extends JavaPlugin implements uSkyBlockAPI, CommandManage
     }
 
     public void clearPlayerInventory(Player player) {
+        if (BoroughSettings.enabled(this)) {
+            PlayerInfo info = getPlayerInfo(player);
+            if (info != null) info.setClearInventoryOnNextEntry(false);
+            return;
+        }
         getLogger().entering(CN, "clearPlayerInventory", player);
         RuntimeConfig.Restart restartConfig = runtimeConfigs.current().restart();
         PlayerInfo playerInfo = getPlayerInfo(player);
@@ -541,6 +554,11 @@ public class uSkyBlock extends JavaPlugin implements uSkyBlockAPI, CommandManage
     }
 
     public void createIsland(final Player player, String cSchem) {
+        if (BoroughSettings.enabled(this)
+            && !BoroughSettings.ready(this)) {
+            player.sendMessage("主城尚未设置完成，请联系管理员。");
+            return;
+        }
         PlayerInfo pi = getPlayerInfo(player);
         if (pi.isIslandGenerating()) {
             sendErrorTr(player, "Your island is currently generating. You cannot create a new one right now.");
@@ -557,6 +575,7 @@ public class uSkyBlock extends JavaPlugin implements uSkyBlockAPI, CommandManage
             }
             generateIsland(player, pi, next, cSchem);
         } catch (Exception ex) {
+            pi.setIslandGenerating(false);
             sendTr(player, "Could not create your island. Please contact a server moderator.");
             log(Level.SEVERE, "Error creating island", ex);
         }
@@ -813,6 +832,11 @@ public class uSkyBlock extends JavaPlugin implements uSkyBlockAPI, CommandManage
         Location pLoc = player.getLocation();
         if (!getWorldManager().isSkyWorld(pLoc.getWorld())) {
             return false;
+        }
+        if (BoroughSettings.enabled(this)) {
+            var bounds = BoroughSettings.bounds(this);
+            return bounds != null && pLoc.getX() >= bounds.minX() && pLoc.getX() < (long) bounds.maxX() + 1
+                && pLoc.getZ() >= bounds.minZ() && pLoc.getZ() < (long) bounds.maxZ() + 1;
         }
         Location spawnCenter = new Location(WorldManager.skyBlockWorld, 0, pLoc.getBlockY(), 0);
         return spawnCenter.distance(pLoc) <= runtimeConfigs.current().general().spawnSize();

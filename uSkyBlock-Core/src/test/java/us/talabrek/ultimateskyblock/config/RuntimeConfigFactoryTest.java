@@ -32,6 +32,25 @@ public class RuntimeConfigFactoryTest {
     }
 
     @Test
+    public void boroughOverridesDestructiveAndOriginSpecificDefaults() {
+        var config = new YamlConfiguration();
+        config.setDefaults(PluginConfigLoader.loadBundledConfig());
+        config.set("skyborough.enabled", true);
+        config.set("nether.enabled", true);
+        config.set("options.extras.sendToSpawn", true);
+        var runtime = runtimeConfigFactory.load(config);
+        assertEquals(0, runtime.general().spawnSize());
+        assertFalse(runtime.advanced().manageSpawn());
+        assertFalse(runtime.nether().enabled());
+        assertFalse(runtime.extras().sendToSpawn());
+        assertFalse(runtime.restart().clearInventory());
+        assertFalse(runtime.restart().clearArmor());
+        assertFalse(runtime.restart().clearEnderChest());
+        assertFalse(runtime.restart().clearPerms());
+        assertFalse(runtime.restart().clearCurrency());
+    }
+
+    @Test
     public void loadsTypedRuntimeConfigSections() {
         YamlConfiguration config = new YamlConfiguration();
         config.setDefaults(PluginConfigLoader.loadBundledConfig());

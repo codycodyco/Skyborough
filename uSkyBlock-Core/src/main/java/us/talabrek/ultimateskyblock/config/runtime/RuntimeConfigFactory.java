@@ -66,6 +66,7 @@ public final class RuntimeConfigFactory {
         // TL;DR: never silently swallow misconfiguration, try hard to recover if possible, fail explicitly if unrecoverable.
         RuntimeConfigNode root = RuntimeConfigNode.root(config, bundledDefaults, logger);
 
+        boolean borough = config.getBoolean("skyborough.enabled", false);
         String configuredLanguage = resolveConfiguredLanguage(root.stringOrNull("language"));
         int maxPartySize = root.integerWithDefault("options.general.maxPartySize", 0);
         int distance = root.integerWithDefault("options.island.distance", 50);
@@ -92,7 +93,7 @@ public final class RuntimeConfigFactory {
                     root.durationWithDefault("options.general.biomeChange"),
                     defaultBiomeKey,
                     defaultNetherBiomeKey,
-                    root.integerWithDefault("options.general.spawnSize", 0),
+                    borough ? 0 : root.integerWithDefault("options.general.spawnSize", 0),
                     root.durationWithDefault("options.general.maxSpam")
                 ),
                 new RuntimeConfig.Island(
@@ -129,7 +130,7 @@ public final class RuntimeConfigFactory {
                     loadIntMap(root.child("options.island.block-limits"), "enabled")
                 ),
                 new RuntimeConfig.Extras(
-                    root.boolWithDefault("options.extras.sendToSpawn"),
+                    !borough && root.boolWithDefault("options.extras.sendToSpawn"),
                     root.boolWithDefault("options.extras.respawnAtIsland"),
                     root.boolWithDefault("options.extras.obsidianToLava")
                 ),
@@ -157,7 +158,7 @@ public final class RuntimeConfigFactory {
                     root.boolWithDefault("options.protection.visitors.block-banned-entry")
                 ),
                 new RuntimeConfig.Nether(
-                    root.boolWithDefault("nether.enabled"),
+                    !borough && root.boolWithDefault("nether.enabled"),
                     root.integerWithDefault("nether.lava-level", 0),
                     root.integerWithDefault("nether.height", 0),
                     root.string("nether.chunk-generator", DEFAULT_NETHER_CHUNK_GENERATOR),
@@ -177,11 +178,11 @@ public final class RuntimeConfigFactory {
                     )
                 ),
                 new RuntimeConfig.Restart(
-                    root.boolWithDefault("options.restart.clearInventory"),
-                    root.boolWithDefault("options.restart.clearPerms"),
-                    root.boolWithDefault("options.restart.clearArmor"),
-                    root.boolWithDefault("options.restart.clearEnderChest"),
-                    root.boolWithDefault("options.restart.clearCurrency"),
+                    !borough && root.boolWithDefault("options.restart.clearInventory"),
+                    !borough && root.boolWithDefault("options.restart.clearPerms"),
+                    !borough && root.boolWithDefault("options.restart.clearArmor"),
+                    !borough && root.boolWithDefault("options.restart.clearEnderChest"),
+                    !borough && root.boolWithDefault("options.restart.clearCurrency"),
                     root.boolWithDefault("options.restart.teleportWhenReady"),
                     root.durationWithDefault("options.restart.teleportDelay"),
                     root.stringList("options.restart.extra-commands")
@@ -190,7 +191,7 @@ public final class RuntimeConfigFactory {
                     root.durationWithDefault("options.advanced.confirmTimeout"),
                     root.boolWithDefault("options.advanced.useDisplayNames"),
                 root.decimal("options.advanced.topTenCutoff", root.decimalWithDefault("options.advanced.purgeLevel", 0d), 0d),
-                    root.boolWithDefault("options.advanced.manageSpawn"),
+                    !borough && root.boolWithDefault("options.advanced.manageSpawn"),
                 root.string("options.advanced.playerCache", DEFAULT_PLAYER_CACHE_SPEC),
                 root.string("options.advanced.islandCache", DEFAULT_ISLAND_CACHE_SPEC),
                 root.string("options.advanced.completionCache", DEFAULT_COMPLETION_CACHE_SPEC),
